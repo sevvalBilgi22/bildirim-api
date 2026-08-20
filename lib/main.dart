@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
+
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Arka planda bildirim geldi!");
@@ -13,21 +14,23 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // 1. Firebase'i başlatıyoruz
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
- FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  // 2. Bildirim izinlerini istiyoruz
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
-  NotificationSettings settings = await messaging.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
-  print('Kullanıcı bildirim izni durumu: ${settings.authorizationStatus}');
-String? token = await messaging.getToken();
-  print("fRITA0vCTtOIMhuH4oWglF:APA91bE7LTIbQ4iUy44J22BjLRArxfXVCjoDGno3hy35a3pTeNhE_5p6CddcXxRooiiTd_H0ucc43xJ_NQQMpVDoM4QteEOMQ25_uHiTJB0BZ7Bpkm1DW8Q: $token");
+  try {
+    await Firebase.initializeApp();
+    
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    print('Kullanıcı izin durumu: ${settings.authorizationStatus}');
+    
+  } catch (e) {
+    print("Firebase Web/Windows'ta başlatılamadı, ama tasarıma devam ediliyor: $e");
+  }
+
   runApp(const BildirimUygulamasi());
 }
 
@@ -38,7 +41,7 @@ class BildirimUygulamasi extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Duyuru Merkezi',
+      title: 'Web Bildirimlerim',
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFFF8F7FA),
         primaryColor: const Color(0xFF9C8CB9),
@@ -63,43 +66,185 @@ class AnaEkran extends StatefulWidget {
 class _AnaEkranState extends State<AnaEkran> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<dynamic> tumDuyurular = [];
+  int gosterilecekLimit = 15; // Limit Değişkenimiz
   bool yukleniyor = true;
 
- @override
+  @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     verileriCek(); 
 
-    // Uygulama arka plandayken bildirime tıklanırsa:
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      _bildirimdenGelenLinkiAc(message);
-    });
-
-    // Uygulama tamamen kapalıyken bildirime tıklanırsa:
-    FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
-      if (message != null) {
+    try {
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         _bildirimdenGelenLinkiAc(message);
-      }
-    });
+      });
+
+      FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
+        if (message != null) {
+          _bildirimdenGelenLinkiAc(message);
+        }
+      });
+    } catch (e) {
+      print("Chrome'da test edildiği için bildirim dinleyicileri atlandı.");
+    }
   }
 
-  // Bildirime tıklanınca çalışacak yeni fonksiyonumuz:
   void _bildirimdenGelenLinkiAc(RemoteMessage message) {
     if (message.data.containsKey('link')) {
       final String gelenLink = message.data['link'];
       
       launchUrl(
         Uri.parse(gelenLink),
-        mode: LaunchMode.inAppWebView, // SİHİRLİ DOKUNUŞ BURASI
+        mode: LaunchMode.inAppWebView, 
       );
     }
+  } 
+
+  // --- YENİ SİTE EKLEME ---
+  void _siteEklemePenceresiniAc(BuildContext context) {
+    final TextEditingController adController = TextEditingController();
+    final TextEditingController urlController = TextEditingController();
+    bool isSubmitting = false; 
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, 
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 20,
+                right: 20,
+                top: 16,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40, height: 4, 
+                    decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  const Text(
+                    "Yeni Site Ekle", 
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.deepPurple)
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "RSS destekli veya sistemde kayıtlı siteler anında eklenir.", 
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 20),
+
+                  TextField(
+                    controller: adController, 
+                    decoration: InputDecoration(
+                      hintText: "Site Adı (Örn: Uludağ Üni)",
+                      filled: true,
+                      fillColor: const Color(0xFFF4EFFF),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                      prefixIcon: const Icon(Icons.label_outline, color: Colors.deepPurple),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  TextField(
+                    controller: urlController, 
+                    decoration: InputDecoration(
+                      hintText: "Bağlantı (Örn: https://uludag.edu.tr)",
+                      filled: true,
+                      fillColor: const Color(0xFFF4EFFF),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                      prefixIcon: const Icon(Icons.link, color: Colors.deepPurple),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: isSubmitting ? null : () async {
+                        final ad = adController.text.trim();
+                        final url = urlController.text.trim();
+
+                        if (ad.isEmpty || url.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Lütfen her iki alanı da doldurun!"), backgroundColor: Colors.redAccent),
+                          );
+                          return;
+                        }
+
+                        setModalState(() {
+                          isSubmitting = true;
+                        });
+
+                        try {
+                          final response = await http.post(
+                            Uri.parse('https://bildirim-sunucusu.onrender.com/site-ekle'),
+                            headers: {'Content-Type': 'application/json'},
+                            body: json.encode({'site_adi': ad, 'url': url}),
+                          );
+
+                          Navigator.pop(context); 
+
+                          if (response.statusCode == 200 || response.statusCode == 201) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("✅ Site başarıyla eklendi!"), backgroundColor: Colors.green),
+                            );
+                            verileriCek(); 
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Bu site özel bir altyapıya sahip. Entegrasyon talebiniz alındı! 🚀"),
+                                backgroundColor: Colors.deepPurple,
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Sunucuya ulaşılamadı: $e"), backgroundColor: Colors.red),
+                          );
+                        } finally {
+                          if (mounted) {
+                            setModalState(() {
+                              isSubmitting = false;
+                            });
+                          }
+                        }
+                      },
+                      child: isSubmitting
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : const Text("Takip Et / Talep Gönder", style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            );
+          }
+        );
+      },
+    );
   }
+
   Future<void> verileriCek() async {
     try {
-      // DİKKAT: Telefon için bilgisayarının yerel IP adresini yazmalısın! 
-      // Örnek: 'http://192.168.1.35:8000/duyurular'
-      final response = await http.get(Uri.parse('http://10.58.121.234:8000/duyurular')); 
+      final response = await http.get(Uri.parse('https://bildirim-sunucusu.onrender.com/duyurular')); 
       if (response.statusCode == 200) {
         setState(() {
           tumDuyurular = json.decode(response.body);
@@ -124,27 +269,47 @@ class _AnaEkranState extends State<AnaEkran> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Duyuru Merkezi',
-          style: TextStyle(
-            color: Color(0xFF4A4063),
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
+        title: const Text('Web Bildirimlerim'),
+        backgroundColor: const Color(0xFFF4EFFF),
+        actions: [
+          // DOĞRU YER: LİMİT FİLTRESİ ANA EKRANA EKLENDİ
+          PopupMenuButton<int>(
+            icon: const Icon(Icons.filter_list, color: Colors.deepPurple),
+            tooltip: "Gösterilecek Duyuru Sayısı",
+            onSelected: (int yeniLimit) {
+              setState(() {
+                gosterilecekLimit = yeniLimit; 
+              });
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
+              const PopupMenuItem<int>(value: 10, child: Text('Son 10 Duyuru')),
+              const PopupMenuItem<int>(value: 15, child: Text('Son 15 Duyuru')),
+              const PopupMenuItem<int>(value: 20, child: Text('Son 20 Duyuru')),
+              const PopupMenuItem<int>(value: 50, child: Text('Son 50 Duyuru')),
+            ],
           ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HakkindaEkrani()),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Image.asset('assets/iconn.jpg', width: 36, height: 36),
+            ),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: const Color(0xFF6C5DD3),
+          labelColor: Colors.deepPurple,
           unselectedLabelColor: Colors.grey,
-          indicatorColor: const Color(0xFF6C5DD3),
-          indicatorSize: TabBarIndicatorSize.label,
+          indicatorColor: Colors.deepPurple,
           tabs: const [
             Tab(text: 'Tümü'),
             Tab(text: 'ÖSYM'),
-            Tab(text: 'Üniversite'),
+            Tab(text: 'GAKMYO'),
           ],
         ),
       ),
@@ -158,23 +323,33 @@ class _AnaEkranState extends State<AnaEkran> with SingleTickerProviderStateMixin
                 _duyuruListesiOlustur(tumDuyurular.where((d) => d['site_adi'] == 'Üniversite').toList()),
               ],
             ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _siteEklemePenceresiniAc(context);
+        },
+        backgroundColor: const Color(0xFF9C8CB9),
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
     );
   }
 
   Widget _duyuruListesiOlustur(List<dynamic> duyurular) {
-    if (duyurular.isEmpty) {
+    final sinirliListe = duyurular.take(gosterilecekLimit).toList();
+
+    if (sinirliListe.isEmpty) {
       return const Center(child: Text("Bu kategoride duyuru bulunamadı.", style: TextStyle(color: Colors.grey)));
     }
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: ListView.builder(
-        itemCount: duyurular.length,
+        itemCount: sinirliListe.length, 
         itemBuilder: (context, index) {
-          final duyuru = duyurular[index];
+          final duyuru = sinirliListe[index]; 
+          
           return Padding(
             padding: const EdgeInsets.only(bottom: 10.0),
             child: PastelKartOrnegi(
-              siteAdi: duyuru['site_adi'] ?? 'Bilinmiyor',
+              siteAdi: duyuru['site_adi'] == 'Üniversite' ? 'GAKMYO' : (duyuru['site_adi'] ?? 'Bilinmiyor'),
               baslik: duyuru['baslik'] ?? 'Başlıksız Duyuru',
               tarih: duyuru['tarih'] ?? '',
               link: duyuru['link'] ?? 'https://www.google.com',
@@ -202,13 +377,40 @@ class PastelKartOrnegi extends StatelessWidget {
 
   Future<void> _linkiAc() async {
     final Uri url = Uri.parse(link);
-    if (!await launchUrl(url)) {
+    if (!await launchUrl(url, mode: LaunchMode.inAppWebView)) {
       debugPrint('Link açılamadı: $url');
     }
   }
 
+  bool _yeniMi(String tarihMetni) {
+    if (tarihMetni.isEmpty) return false;
+    
+    try {
+      // Tarihte nokta, tire veya eğik çizgi kullanılmış olabilir, hepsini standartlaştırıyoruz
+      final temizTarih = tarihMetni.replaceAll('-', '.').replaceAll('/', '.');
+      final parcalar = temizTarih.split('.'); 
+      
+      if (parcalar.length == 3) {
+        final duyuruTarihi = DateTime(
+          int.parse(parcalar[2].trim()), // Yıl
+          int.parse(parcalar[1].trim()), // Ay
+          int.parse(parcalar[0].trim()), // Gün
+        );
+        
+        final fark = DateTime.now().difference(duyuruTarihi).inDays;
+        
+        // SİHİRLİ DOKUNUŞ: Fark 0 ile 7 gün arasında olmalı! (Gelecek tarihleri veya negatifleri engeller)
+        return fark >= 0 && fark <= 7; 
+      }
+    } catch (e) {
+      return false; 
+    }
+    return false;
+  }
   @override
   Widget build(BuildContext context) {
+    final bool yeni = _yeniMi(tarih);
+
     return GestureDetector(
       onTap: _linkiAc,
       child: Container(
@@ -230,24 +432,46 @@ class PastelKartOrnegi extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFECE6F0),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    siteAdi,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF65558F),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFECE6F0),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        siteAdi,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF65558F),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8), 
+                    if (yeni)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.deepPurpleAccent.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.deepPurpleAccent.withOpacity(0.3)),
+                        ),
+                        child: const Text(
+                          "Yeni",
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepPurple,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 Text(
                   tarih,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -259,6 +483,61 @@ class PastelKartOrnegi extends StatelessWidget {
                 fontWeight: FontWeight.w500,
                 color: Color(0xFF1D1B20),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- GELİŞTİRİCİ HAKKINDA EKRANI ---
+class HakkindaEkrani extends StatelessWidget {
+  const HakkindaEkrani({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Hakkında"),
+        backgroundColor: const Color(0xFFF4EFFF),
+        foregroundColor: Colors.deepPurple, 
+      ),
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset('assets/iconn.jpg', width: 120, height: 120),
+            const SizedBox(height: 20),
+            const Text(
+              "Web Bildirimlerim",
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              "Sürüm: 1.0.0",
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const SizedBox(height: 40),
+            const Text(
+              "Geliştirici",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.deepPurple),
+            ),
+            const SizedBox(height: 5),
+            const Text(
+              "Şevval Ülkü Bilgi",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic),
+            ),
+            const SizedBox(height: 40),
+            const Text(
+              "Yayın Tarihi: Ağustos 2026",
+              style: TextStyle(fontSize: 16, color: Colors.black87),
+            ),
+            const SizedBox(height: 5),
+            const Text(
+              "Son Güncelleme: 20 Ağustos 2026",
+              style: TextStyle(fontSize: 16, color: Colors.black87),
             ),
           ],
         ),

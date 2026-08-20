@@ -12,7 +12,7 @@ telefon_token = "fRITA0vCTtOIMhuH4oWglF:APA91bE7LTIbQ4iUy44J22BjLRArxfXVCjoDGno3
 # 3. Gönderilecek Bildirim İçeriği
 mesaj = messaging.Message(
     notification=messaging.Notification(
-        title='Sistem Başarıyla Kuruldu! 🚀',
+        title='Sistem Başarıyla Kuruldu!',
         body='Python ve Firebase başarıyla el sıkıştı. 16. Gün tamamlandı!',
     ),
     token=telefon_token,
@@ -21,7 +21,7 @@ mesaj = messaging.Message(
 # 3. Gönderilecek Bildirim İçeriği
 mesaj = messaging.Message(
     notification=messaging.Notification(
-        title='19. Gün Testi! 🚀',
+        title='19. Gün Testi!',
         body='Bana tıkla ve uygulama içinde ÖSYM sayfasını aç.',
     ),
     data={

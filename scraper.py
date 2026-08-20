@@ -153,7 +153,7 @@ def uludag_duyurulari_getir():
         # Uludağ Üniversitesi sayfasındaki genel duyuru bağlantılarını (a etiketlerini) arıyoruz
         duyurular = soup.find_all("a") 
         
-        print("🔍 Üniversite sayfasından duyurular toplanıyor...")
+        print("Üniversite sayfasından duyurular toplanıyor...")
         bulunan_duyuru_sayisi = 0
         
         for duyuru in reversed(duyurular): # Yine eskiden yeniye doğru kaydedelim

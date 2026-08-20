@@ -1,6 +1,6 @@
 {
-    "name": "bildirim_app",
-    "short_name": "bildirim_app",
+    "name": "Web Bildirimlerim",
+    "short_name": "Web Bildirimlerim",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
