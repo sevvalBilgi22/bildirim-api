@@ -628,7 +628,8 @@ class HesabimEkrani extends StatelessWidget {
             const SizedBox(height: 6),
             const Text(
               "Bilgisayar Programcısı | Yazılım Geliştirici | BUÜ GAKMYO",
-              style: TextStyle(fontSize: 15, color: Colors.grey, letterSpacing: 1.2, alignment: TextAlign.center),
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 15, color: Colors.grey, letterSpacing: 1.2, ),
             ),
             const SizedBox(height: 16),
 
