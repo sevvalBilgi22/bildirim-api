@@ -567,7 +567,7 @@ class HakkindaEkrani extends StatelessWidget {
             ),
             const SizedBox(height: 5),
             const Text(
-              "Son Güncelleme: 20 Ağustos 2026",
+              "Son Güncelleme: 21 Ağustos 2026",
               style: TextStyle(fontSize: 16, color: Colors.black87),
             ),
           ],
@@ -628,7 +628,7 @@ class HesabimEkrani extends StatelessWidget {
             const SizedBox(height: 6),
             const Text(
               "Bilgisayar Programcısı | Yazılım Geliştirici | BUÜ GAKMYO",
-              style: TextStyle(fontSize: 15, color: Colors.grey, letterSpacing: 1.2),
+              style: TextStyle(fontSize: 15, color: Colors.grey, letterSpacing: 1.2, alignment: TextAlign.center),
             ),
             const SizedBox(height: 16),
 
