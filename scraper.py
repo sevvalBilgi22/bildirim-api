@@ -69,9 +69,9 @@ def duyuru_kontrol_et_ve_kaydet(site_adi, baslik, link):
 
        
             messaging.send(mesaj)
-            print("🚀 Bildirim telefona başarıyla fırlatıldı!")
+            print("Bildirim telefona başarıyla fırlatıldı!")
         except Exception as e:
-            print(f"❌ Bildirim gönderilemedi: {e}")
+            print(f"Bildirim gönderilemedi: {e}")
 
         
         # Gelecek haftalarda telefona bildirim gönderme kodunu tam buraya yazacağız!
@@ -84,8 +84,6 @@ def duyuru_kontrol_et_ve_kaydet(site_adi, baslik, link):
     conn.close()
 
 # --- ESKİ VERİ ÇEKME FONKSİYONUMUZ (GÜNCELLENDİ) ---
-
-# --- ESKİ VERİ ÇEKME FONKSİYONUMUZ (10 DUYURU İÇİN GÜNCELLENDİ) ---
 
 def son_duyuruyu_getir():
     url = "https://www.osym.gov.tr/Duyurular/Index" 
@@ -101,7 +99,7 @@ def son_duyuruyu_getir():
         duyurular = soup.find_all("a", class_="duyuru-list-item")
 
         if duyurular:
-            print("🔍 ÖSYM'den son 10 duyuru toplanıyor...")
+            print("ÖSYM'den son 10 duyuru toplanıyor...")
             # Sadece 0. indeksi değil, [:10] ile ilk 10 elemanı alıp döngüye sokuyoruz
         for duyuru in reversed(duyurular[:10]):
                 baslik = duyuru.get("title")
@@ -183,9 +181,8 @@ def uludag_duyurulari_getir():
         print(f"Sistemsel bir hata oluştu: {e}")
 
 # --- PROGRAMIN ÇALIŞMA SIRASI ---
-# --- PROGRAMIN ÇALIŞMA SIRASI ---
 def gorevleri_calistir():
-    print("⏳ Zamanlanmış görev başlatılıyor...")
+    print("Zamanlanmış görev başlatılıyor...")
     son_duyuruyu_getir()       # 1. ÖSYM'yi kontrol et
     uludag_duyurulari_getir()  # 2. Üniversiteyi kontrol et
 
@@ -195,10 +192,10 @@ if __name__ == "__main__":
     # 1. Program açılır açılmaz beklemeden bir kere kontrol et
     gorevleri_calistir() 
     
-    # 2. Zamanlayıcıyı kur: Her 12 saatte bir 'gorevleri_calistir' fonksiyonunu tetikle
-    schedule.every(12).hours.do(gorevleri_calistir)
+    # 2. Zamanlayıcıyı kur: Her 4 saatte bir 'gorevleri_calistir' fonksiyonunu tetikle
+    schedule.every(4).hours.do(gorevleri_calistir)
     
-    print("⏰ Sistem aktif. Arka planda 12 saatte bir kontrol yapılıyor. (Çıkış için Ctrl+C)")
+    print("Sistem aktif. Arka planda 4 saatte bir kontrol yapılıyor. (Çıkış için Ctrl+C)")
     
     # 3. Sonsuz Döngü: Programın kapanmasını engeller ve zamanı gelip gelmediğini sürekli kontrol eder
     while True:

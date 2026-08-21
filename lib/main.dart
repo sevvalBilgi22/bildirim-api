@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
+import 'package:flutter/foundation.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -15,7 +16,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   try {
+    debugPrint("⏳ DİKKAT: Firebase başlatılıyor...");
     await Firebase.initializeApp();
+    debugPrint("✅ DİKKAT: Firebase başarıyla başlatıldı!");
     
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
     
@@ -25,12 +28,17 @@ void main() async {
       badge: true,
       sound: true,
     );
-    print('Kullanıcı izin durumu: ${settings.authorizationStatus}');
+    debugPrint('Kullanıcı izin durumu: ${settings.authorizationStatus}');
+    
+    debugPrint("⏳ DİKKAT: Token isteniyor...");
+    String? token = await FirebaseMessaging.instance.getToken();
+    debugPrint("🚀 TELEFONUN ÖZEL TOKENİ: $token");
     
   } catch (e) {
-    print("Firebase Web/Windows'ta başlatılamadı, ama tasarıma devam ediliyor: $e");
+    debugPrint("❌ DİKKAT: Firebase başlatılamadı! İŞTE HATA SEBEBİ: $e");
   }
 
+  // Uygulamayı başlatan kod en sonda, sorunsuz çalışacak
   runApp(const BildirimUygulamasi());
 }
 
@@ -288,6 +296,17 @@ class _AnaEkranState extends State<AnaEkran> with SingleTickerProviderStateMixin
               const PopupMenuItem<int>(value: 50, child: Text('Son 50 Duyuru')),
             ],
           ),
+          // FİLTRE MENÜSÜNÜN HEMEN ALTINA EKLENECEK
+          IconButton(
+            icon: const Icon(Icons.person_outline, color: Colors.deepPurple),
+            tooltip: "Hesabım",
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HesabimEkrani()),
+              );
+            },
+          ),
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -295,10 +314,15 @@ class _AnaEkranState extends State<AnaEkran> with SingleTickerProviderStateMixin
                 MaterialPageRoute(builder: (context) => const HakkindaEkrani()),
               );
             },
-            child: Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: Image.asset('assets/iconn.jpg', width: 36, height: 36),
+            // Eski Hali: child: Image.asset('assets/iconn.jpg', width: 36, height: 36),
+          child: ClipOval(
+            child: Image.asset(
+              'assets/iconn.jpg', 
+              width: 36, 
+              height: 36, 
+              fit: BoxFit.cover, // Resmin yuvarlağa tam oturmasını sağlar
             ),
+          ),
           ),
         ],
         bottom: TabBar(
@@ -399,8 +423,8 @@ class PastelKartOrnegi extends StatelessWidget {
         
         final fark = DateTime.now().difference(duyuruTarihi).inDays;
         
-        // SİHİRLİ DOKUNUŞ: Fark 0 ile 7 gün arasında olmalı! (Gelecek tarihleri veya negatifleri engeller)
-        return fark >= 0 && fark <= 7; 
+        
+        return fark >= 0 && fark < 7; // Artık 7 günü geçenlere acımayacak!
       }
     } catch (e) {
       return false; 
@@ -508,7 +532,15 @@ class HakkindaEkrani extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/iconn.jpg', width: 120, height: 120),
+           // Eski Hali: Image.asset('assets/iconn.jpg', width: 120, height: 120),
+            ClipOval(
+              child: Image.asset(
+                'assets/iconn.jpg', 
+                width: 120, 
+                height: 120, 
+                fit: BoxFit.cover,
+              ),
+            ),
             const SizedBox(height: 20),
             const Text(
               "Web Bildirimlerim",
@@ -516,7 +548,7 @@ class HakkindaEkrani extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Text(
-              "Sürüm: 1.0.0",
+              "Sürüm: 0.3",
               style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
             const SizedBox(height: 40),
@@ -540,6 +572,106 @@ class HakkindaEkrani extends StatelessWidget {
               style: TextStyle(fontSize: 16, color: Colors.black87),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+// --- ÖZEL TASARIM HESABIM EKRANI ---
+class HesabimEkrani extends StatelessWidget {
+  const HesabimEkrani({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F7FA),
+      appBar: AppBar(
+        title: const Text("Hesabım", style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFFF4EFFF),
+        foregroundColor: Colors.deepPurple,
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 40),
+            
+            // Y2K Polaroid Fotoğraf Çerçevesi
+            Center(
+              child: Container(
+                padding: const EdgeInsets.only(top: 12, left: 12, right: 12, bottom: 40),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 15, offset: const Offset(0, 8)),
+                  ],
+                ),
+                child: Container(
+                  width: 160,
+                  height: 160,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    image: const DecorationImage(
+                      image: AssetImage('assets/iconn.jpg'), // Kendi profil resmini de koyabilirsin
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            
+            // İsim ve Unvan
+            const Text(
+              "Şevval Ülkü Bilgi",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF1D1B20)),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              "Yazılım Geliştirici | GAKMYO",
+              style: TextStyle(fontSize: 15, color: Colors.grey, letterSpacing: 1.2),
+            ),
+            const SizedBox(height: 16),
+
+            // Zarif İnce Çizgi Yıldız Detayı (6 Dolu, 2 Boş)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (int i = 0; i < 6; i++)
+                  const Icon(Icons.star, size: 18, color: Color(0xFF9C8CB9)),
+                for (int i = 0; i < 2; i++)
+                  const Icon(Icons.star_border, size: 18, color: Color(0xFF9C8CB9)),
+              ],
+            ),
+            const SizedBox(height: 40),
+
+            // Profil Ayarları Sekmeleri
+            _ayarlarSekmesi(Icons.bookmark_border, "Kaydedilen Duyurular"),
+            _ayarlarSekmesi(Icons.notifications_none, "Bildirim Tercihleri"),
+            _ayarlarSekmesi(Icons.color_lens_outlined, "Tema Görünümü"),
+            _ayarlarSekmesi(Icons.logout, "Çıkış Yap", isDestructive: true),
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _ayarlarSekmesi(IconData ikon, String baslik, {bool isDestructive = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)],
+        ),
+        child: ListTile(
+          leading: Icon(ikon, color: isDestructive ? Colors.redAccent : Colors.deepPurple),
+          title: Text(baslik, style: TextStyle(color: isDestructive ? Colors.redAccent : Colors.black87, fontWeight: FontWeight.w500)),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+          onTap: () {}, // İleride buralara tıklama özellikleri eklenecek
         ),
       ),
     );
