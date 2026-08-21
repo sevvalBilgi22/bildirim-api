@@ -1,19 +1,19 @@
 import requests
 from bs4 import BeautifulSoup
-import sqlite3 # 3. Gün: Veritabanı kütüphanesini dahil ettik. Harici kuruluma gerek yoktur, Python'la gelir.
+import sqlite3 #veritabanı kütüphanesi
 import schedule
 import time
 import firebase_admin
 from firebase_admin import credentials, messaging
 
-# Firebase Yetki Belgesini Tanıtıyoruz (Sadece bir kere çalışır)
+# Firebase Yetki Belgesini Tanıtma
 if not firebase_admin._apps:
     cred = credentials.Certificate("firebase-admin.json")
     firebase_admin.initialize_app(cred)
     
-TELEFON_TOKEN = "BURAYA_KENDI_UZUN_TOKEN_INI_YAPISTIR"
+TELEFON_TOKEN = "fRITA0vCTtOIMhuH4oWglF:APA91bE7LTIbQ4iUy44J22BjLRArxfXVCjoDGno3hy35a3pTeNhE_5p6CddcXxRooiiTd_H0ucc43xJ_NQQMpVDoM4QteEOMQ25_uHiTJB0BZ7Bpkm1DW8Q"
 
-# --- YENİ EKLENEN VERİTABANI FONKSİYONLARI ---
+#VERİTABANI FONKSİYONLARI
 
 def veritabani_kur():
     """
@@ -23,7 +23,7 @@ def veritabani_kur():
     conn = sqlite3.connect("bildirimler.db")
     cursor = conn.cursor()
     
-    # site_adi: İleride birden fazla site ekleyeceğin için hangi sitenin duyurusu olduğunu tutar
+    # site_adi
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS duyurular (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +37,7 @@ def veritabani_kur():
 
 def duyuru_kontrol_et_ve_kaydet(site_adi, baslik, link):
     """
-    4. Gün: Bu fonksiyon veritabanına bakar. Çekilen başlık veritabanında varsa bir şey yapmaz.
+    Bu fonksiyon veritabanına bakar. Çekilen başlık veritabanında varsa bir şey yapmaz.
     Yoksa (yani yeniyse) veritabanına kaydeder ve "YENİ DUYURU" alarmı verir.
     """
     conn = sqlite3.connect("bildirimler.db")
@@ -61,7 +61,7 @@ def duyuru_kontrol_et_ve_kaydet(site_adi, baslik, link):
                     body=baslik,
                 ),
                 data={
-                    "link": link # İŞTE YENİ EKLENEN SİHİRLİ SATIR
+                    "link": link
                 },
                 token=TELEFON_TOKEN,
             )
@@ -74,8 +74,6 @@ def duyuru_kontrol_et_ve_kaydet(site_adi, baslik, link):
             print(f"Bildirim gönderilemedi: {e}")
 
         
-        # Gelecek haftalarda telefona bildirim gönderme kodunu tam buraya yazacağız!
-        
         # Yeni duyuruyu sisteme "eski" olmaması için kaydediyoruz
         cursor.execute("INSERT INTO duyurular (site_adi, baslik, link) VALUES (?, ?, ?)", (site_adi, baslik, link))
         conn.commit()
@@ -83,7 +81,7 @@ def duyuru_kontrol_et_ve_kaydet(site_adi, baslik, link):
 
     conn.close()
 
-# --- ESKİ VERİ ÇEKME FONKSİYONUMUZ (GÜNCELLENDİ) ---
+#VERİ ÇEKME FONKSİYONU
 
 def son_duyuruyu_getir():
     url = "https://www.osym.gov.tr/Duyurular/Index" 
@@ -127,7 +125,7 @@ def son_duyuruyu_getir():
             link = en_guncel_duyuru.get("href")
             tam_link = f"https://www.osym.gov.tr{link}"
             
-            # Veri çekildikten sonra sadece ekrana yazdırmak yerine kontrol fonksiyonumuza gönderiyoruz!
+            # Veri çekildikten sonra sadece ekrana yazdırmak yerine kontrol fonksiyonumuza gönderiyoruz
             duyuru_kontrol_et_ve_kaydet("ÖSYM", baslik, tam_link)
             
         else:
@@ -166,12 +164,12 @@ def uludag_duyurulari_getir():
                 if not link.startswith("http"):
                     link = f"https://www.uludag.edu.tr{link}"
                     
-                # Site adını "Üniversite" olarak kaydediyoruz ki Flutter'daki o sekmeye düşsün!
+                # Site adını "Üniversite" olarak kaydediyoruz ki Flutter'daki o sekmeye düşsün
                 duyuru_kontrol_et_ve_kaydet("Üniversite", baslik, link)
                 bulunan_duyuru_sayisi += 1
                 
-                # Sadece son 10 tanesini almak için sınırı koyuyoruz
-                if bulunan_duyuru_sayisi >= 10:
+                # Sadece son 20 tanesini almak için sınırı koyuyoruz
+                if bulunan_duyuru_sayisi >= 20:
                     break
 
         if bulunan_duyuru_sayisi == 0:
@@ -180,24 +178,24 @@ def uludag_duyurulari_getir():
     except Exception as e:
         print(f"Sistemsel bir hata oluştu: {e}")
 
-# --- PROGRAMIN ÇALIŞMA SIRASI ---
+#PROGRAMIN ÇALIŞMA SIRASI, ösym, uludağ
 def gorevleri_calistir():
     print("Zamanlanmış görev başlatılıyor...")
-    son_duyuruyu_getir()       # 1. ÖSYM'yi kontrol et
-    uludag_duyurulari_getir()  # 2. Üniversiteyi kontrol et
+    son_duyuruyu_getir()       
+    uludag_duyurulari_getir()  
 
 if __name__ == "__main__":
     veritabani_kur()
     
-    # 1. Program açılır açılmaz beklemeden bir kere kontrol et
+    #Program açılır açılmaz beklemeden bir kere kontrol et
     gorevleri_calistir() 
     
-    # 2. Zamanlayıcıyı kur: Her 4 saatte bir 'gorevleri_calistir' fonksiyonunu tetikle
+    #Zamanlayıcıyı kur
     schedule.every(4).hours.do(gorevleri_calistir)
     
     print("Sistem aktif. Arka planda 4 saatte bir kontrol yapılıyor. (Çıkış için Ctrl+C)")
     
-    # 3. Sonsuz Döngü: Programın kapanmasını engeller ve zamanı gelip gelmediğini sürekli kontrol eder
+    #Sonsuz Döngü: Programın kapanmasını engeller ve zamanı gelip gelmediğini sürekli kontrol eder
     while True:
         schedule.run_pending()
-        time.sleep(1) # İşlemciyi (CPU) yormamak için her kontrolde 1 saniye dinlen
+        time.sleep(1) # İşlemciyi yormamak için her kontrolde 1 saniye dinlen

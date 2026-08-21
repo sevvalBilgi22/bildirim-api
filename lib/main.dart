@@ -16,9 +16,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   try {
-    debugPrint("⏳ DİKKAT: Firebase başlatılıyor...");
+    debugPrint("DİKKAT: Firebase başlatılıyor...");
     await Firebase.initializeApp();
-    debugPrint("✅ DİKKAT: Firebase başarıyla başlatıldı!");
+    debugPrint("DİKKAT: Firebase başarıyla başlatıldı!");
     
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
     
@@ -30,15 +30,15 @@ void main() async {
     );
     debugPrint('Kullanıcı izin durumu: ${settings.authorizationStatus}');
     
-    debugPrint("⏳ DİKKAT: Token isteniyor...");
+    debugPrint("DİKKAT: Token isteniyor...");
     String? token = await FirebaseMessaging.instance.getToken();
-    debugPrint("🚀 TELEFONUN ÖZEL TOKENİ: $token");
+    debugPrint("TELEFONUN ÖZEL TOKENİ: $token");
     
   } catch (e) {
-    debugPrint("❌ DİKKAT: Firebase başlatılamadı! İŞTE HATA SEBEBİ: $e");
+    debugPrint("DİKKAT: Firebase başlatılamadı! İŞTE HATA SEBEBİ: $e");
   }
 
-  // Uygulamayı başlatan kod en sonda, sorunsuz çalışacak
+  // Uygulamayı başlatan kod en sonda
   runApp(const BildirimUygulamasi());
 }
 
@@ -74,7 +74,7 @@ class AnaEkran extends StatefulWidget {
 class _AnaEkranState extends State<AnaEkran> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<dynamic> tumDuyurular = [];
-  int gosterilecekLimit = 15; // Limit Değişkenimiz
+  int gosterilecekLimit = 15; // Limit Değişkeni
   bool yukleniyor = true;
 
   @override
@@ -109,7 +109,7 @@ class _AnaEkranState extends State<AnaEkran> with SingleTickerProviderStateMixin
     }
   } 
 
-  // --- YENİ SİTE EKLEME ---
+  //YENİ SİTE EKLEME
   void _siteEklemePenceresiniAc(BuildContext context) {
     final TextEditingController adController = TextEditingController();
     final TextEditingController urlController = TextEditingController();
@@ -156,7 +156,7 @@ class _AnaEkranState extends State<AnaEkran> with SingleTickerProviderStateMixin
                   TextField(
                     controller: adController, 
                     decoration: InputDecoration(
-                      hintText: "Site Adı (Örn: Uludağ Üni)",
+                      hintText: "Site Adı (Örn: Uludağ Üniversitesi)",
                       filled: true,
                       fillColor: const Color(0xFFF4EFFF),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -211,13 +211,13 @@ class _AnaEkranState extends State<AnaEkran> with SingleTickerProviderStateMixin
 
                           if (response.statusCode == 200 || response.statusCode == 201) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("✅ Site başarıyla eklendi!"), backgroundColor: Colors.green),
+                              const SnackBar(content: Text("Site başarıyla eklendi!"), backgroundColor: Colors.green),
                             );
                             verileriCek(); 
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text("Bu site özel bir altyapıya sahip. Entegrasyon talebiniz alındı! 🚀"),
+                                content: Text("Bu site özel bir altyapıya sahip. Entegrasyon talebiniz alındı!"),
                                 backgroundColor: Colors.deepPurple,
                               ),
                             );
@@ -280,7 +280,7 @@ class _AnaEkranState extends State<AnaEkran> with SingleTickerProviderStateMixin
         title: const Text('Web Bildirimlerim'),
         backgroundColor: const Color(0xFFF4EFFF),
         actions: [
-          // DOĞRU YER: LİMİT FİLTRESİ ANA EKRANA EKLENDİ
+          //LİMİT FİLTRESİ ANA EKRANA EKLENDİ
           PopupMenuButton<int>(
             icon: const Icon(Icons.filter_list, color: Colors.deepPurple),
             tooltip: "Gösterilecek Duyuru Sayısı",
@@ -293,10 +293,10 @@ class _AnaEkranState extends State<AnaEkran> with SingleTickerProviderStateMixin
               const PopupMenuItem<int>(value: 10, child: Text('Son 10 Duyuru')),
               const PopupMenuItem<int>(value: 15, child: Text('Son 15 Duyuru')),
               const PopupMenuItem<int>(value: 20, child: Text('Son 20 Duyuru')),
-              const PopupMenuItem<int>(value: 50, child: Text('Son 50 Duyuru')),
+              const PopupMenuItem<int>(value: 30, child: Text('Son 30 Duyuru')),
             ],
           ),
-          // FİLTRE MENÜSÜNÜN HEMEN ALTINA EKLENECEK
+         
           IconButton(
             icon: const Icon(Icons.person_outline, color: Colors.deepPurple),
             tooltip: "Hesabım",
@@ -314,7 +314,6 @@ class _AnaEkranState extends State<AnaEkran> with SingleTickerProviderStateMixin
                 MaterialPageRoute(builder: (context) => const HakkindaEkrani()),
               );
             },
-            // Eski Hali: child: Image.asset('assets/iconn.jpg', width: 36, height: 36),
           child: ClipOval(
             child: Image.asset(
               'assets/iconn.jpg', 
@@ -424,7 +423,7 @@ class PastelKartOrnegi extends StatelessWidget {
         final fark = DateTime.now().difference(duyuruTarihi).inDays;
         
         
-        return fark >= 0 && fark < 7; // Artık 7 günü geçenlere acımayacak!
+        return fark >= 0 && fark < 7; //7 gün sınırı
       }
     } catch (e) {
       return false; 
@@ -515,7 +514,7 @@ class PastelKartOrnegi extends StatelessWidget {
   }
 }
 
-// --- GELİŞTİRİCİ HAKKINDA EKRANI ---
+//GELİŞTİRİCİ HAKKINDA EKRANI
 class HakkindaEkrani extends StatelessWidget {
   const HakkindaEkrani({super.key});
 
@@ -548,7 +547,7 @@ class HakkindaEkrani extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Text(
-              "Sürüm: 0.3",
+              "Sürüm: 3.0.1",
               style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
             const SizedBox(height: 40),
@@ -577,7 +576,7 @@ class HakkindaEkrani extends StatelessWidget {
     );
   }
 }
-// --- ÖZEL TASARIM HESABIM EKRANI ---
+//HESABIM EKRANI
 class HesabimEkrani extends StatelessWidget {
   const HesabimEkrani({super.key});
 
@@ -613,7 +612,7 @@ class HesabimEkrani extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
                     image: const DecorationImage(
-                      image: AssetImage('assets/iconn.jpg'), // Kendi profil resmini de koyabilirsin
+                      image: AssetImage('assets/iconn.jpg'), 
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -622,19 +621,18 @@ class HesabimEkrani extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             
-            // İsim ve Unvan
             const Text(
               "Şevval Ülkü Bilgi",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF1D1B20)),
             ),
             const SizedBox(height: 6),
             const Text(
-              "Yazılım Geliştirici | GAKMYO",
+              "Bilgisayar Programcısı | Yazılım Geliştirici | BUÜ GAKMYO",
               style: TextStyle(fontSize: 15, color: Colors.grey, letterSpacing: 1.2),
             ),
             const SizedBox(height: 16),
 
-            // Zarif İnce Çizgi Yıldız Detayı (6 Dolu, 2 Boş)
+          
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

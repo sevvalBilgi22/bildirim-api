@@ -5,7 +5,7 @@ import sqlite3
 from apscheduler.schedulers.background import BackgroundScheduler
 import datetime
 import feedparser
-import scraper # YENİ: Kendi yazdığın kazıyıcı dosyanı içeri aktarıyorsun
+import scraper #kazıyıcı dosyanın içine aktarma
 
 app = FastAPI()
 
@@ -17,16 +17,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- YENİ: VERİTABANI KURULUMU ---
-# Uygulama başladığında tabloları kontrol eder, yoksa oluşturur
+#veri tabanı kurulumu
+#Uygulama başladığında tabloları kontrol eder yoksa oluşturur
 def veritabani_kur():
     conn = sqlite3.connect("bildirimler.db")
     cursor = conn.cursor()
-    # Duyurular tablosu
+    #duyurular tablosu
     cursor.execute('''CREATE TABLE IF NOT EXISTS duyurular
                       (id INTEGER PRIMARY KEY AUTOINCREMENT,
                        site_adi TEXT, baslik TEXT, link TEXT, tarih TEXT)''')
-    # YENİ: Talepler tablosu (Özel sitelerin kaydedileceği yer)
+    #talepler tablosu
     cursor.execute('''CREATE TABLE IF NOT EXISTS talepler
                       (id INTEGER PRIMARY KEY AUTOINCREMENT,
                        site_adi TEXT, url TEXT, tarih TEXT)''')
@@ -48,7 +48,7 @@ def site_ekle(istek: SiteIstek):
         print("Başarılı! RSS altyapısı bulundu.")
         return {"mesaj": "Site başarıyla eklendi!"} 
     else:
-        # YENİ: RSS yoksa, siteyi "Talepler" tablosuna kaydediyoruz!
+        #RSS yoksa siteyi talepler tablosuna kaydet
         print("RSS bulunamadı. Veritabanına talep olarak kaydediliyor.")
         conn = sqlite3.connect("bildirimler.db")
         cursor = conn.cursor()
@@ -66,7 +66,7 @@ def duyurulari_getir():
         conn = sqlite3.connect("bildirimler.db")
         cursor = conn.cursor()
         
-        # LİMİT GÜNCELLEMESİ: 50'den 250'ye çıkarıldı ki grup sekmelerine veri yetsin!
+        #50'den 250'ye çıkarıldı ki grup sekmelerine veri yetsin
         cursor.execute("SELECT site_adi, baslik, link, tarih FROM duyurular ORDER BY id DESC LIMIT 250")
         kayitlar = cursor.fetchall()
         conn.close()
@@ -89,8 +89,6 @@ def duyuru_kontrol_et_ve_kaydet():
     print(f"[{su_an}] Otopilot devrede: 4 saatlik rutin kontrol yapılıyor...")
     
     try:
-        # BURASI KRİTİK: scraper.py içindeki ana fonksiyonunun adını buraya yazmalısın.
-        # Örneğin fonksiyonun adı 'verileri_cek' ise:
         scraper.verileri_cek() 
         
         print(f"[{su_an}]Yeni duyurular başarıyla çekildi ve veritabanına eklendi.")
@@ -98,5 +96,5 @@ def duyuru_kontrol_et_ve_kaydet():
         print(f"[{su_an}] Kazıma işlemi sırasında hata oluştu: {e}")
 
 zamanlayici = BackgroundScheduler()
-zamanlayici.add_job(duyuru_kontrol_et_ve_kaydet, 'interval', hours=4)  # Her 4 saatte bir çalışacak
+zamanlayici.add_job(duyuru_kontrol_et_ve_kaydet, 'interval', hours=4)  #Her 4 saatte bir çalışacak
 zamanlayici.start()
