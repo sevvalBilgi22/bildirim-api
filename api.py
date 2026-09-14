@@ -99,6 +99,7 @@ def duyuru_kontrol_et_ve_kaydet():
         print(f"[{su_an}] Kazıma işlemi sırasında hata oluştu: {e}")
 
 zamanlayici = BackgroundScheduler()
+<<<<<<< HEAD
 zamanlayici.add_job(duyuru_kontrol_et_ve_kaydet, 'interval', hours=1)  #Her 1 saatte bir çalışacak
 zamanlayici.start()
 
@@ -120,3 +121,7 @@ def demo_bildirim_gonder():
         return {"durum": "Başarılı", "mesaj": "Demo bildirim telefona fırlatıldı!"}
     except Exception as e:
         return {"durum": "Hata", "detay": str(e)}
+=======
+zamanlayici.add_job(duyuru_kontrol_et_ve_kaydet, 'interval', hours=1)  #Her 4 saatte bir çalışacak
+zamanlayici.start()
+>>>>>>> 55cb8e030e1e34b60bf9862348f0ee6e8765d277
