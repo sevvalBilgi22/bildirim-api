@@ -100,7 +100,8 @@ def duyuru_kontrol_et_ve_kaydet():
 
 zamanlayici = BackgroundScheduler()
 zamanlayici.add_job(duyuru_kontrol_et_ve_kaydet, 'interval', hours=1)  #Her 1 saatte bir çalışacak
-zamanlayici.start()
+if not zamanlayici.running:
+    zamanlayici.start()
 
 @app.get("/demo-bildirim")
 def demo_bildirim_gonder():
@@ -121,4 +122,5 @@ def demo_bildirim_gonder():
     except Exception as e:
         return {"durum": "Hata", "detay": str(e)}
 zamanlayici.add_job(duyuru_kontrol_et_ve_kaydet, 'interval', hours=1)  #Her 4 saatte bir çalışacak
-zamanlayici.start()
+if not zamanlayici.running:
+    zamanlayici.start()
