@@ -6,6 +6,9 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import datetime
 import feedparser
 import scraper #kazıyıcı dosyanın içine aktarma
+from firebase_admin import credentials, messaging
+TELEFON_TOKEN = "fRITA0vCTtOIMhuH4oWglF:APA91bE7LTIbQ4iUy44J22BjLRArxfXVCjoDGno3hy35a3pTeNhE_5p6CddcXxRooiiTd_H0ucc43xJ_NQQMpVDoM4QteEOMQ25_uHiTJB0BZ7Bpkm1DW8Q"
+
 
 app = FastAPI()
 
@@ -96,5 +99,24 @@ def duyuru_kontrol_et_ve_kaydet():
         print(f"[{su_an}] Kazıma işlemi sırasında hata oluştu: {e}")
 
 zamanlayici = BackgroundScheduler()
-zamanlayici.add_job(duyuru_kontrol_et_ve_kaydet, 'interval', hours=4)  #Her 4 saatte bir çalışacak
+zamanlayici.add_job(duyuru_kontrol_et_ve_kaydet, 'interval', hours=1)  #Her 1 saatte bir çalışacak
 zamanlayici.start()
+
+@app.get("/demo-bildirim")
+def demo_bildirim_gonder():
+    try:
+        mesaj = messaging.Message(
+            notification=messaging.Notification(
+                title='Danışman Sunumu - Canlı Test',
+                body='Bu bildirim, proje savunması için manuel olarak tetiklenmiştir. Sistem kusursuz çalışıyor!',
+            ),
+            data={
+                "link": "https://www.uludag.edu.tr/gemlik"
+            },
+            #kodda tanımlı olan TELEFON_TOKEN değişkenini kullanır
+            token=TELEFON_TOKEN, 
+        )
+        messaging.send(mesaj)
+        return {"durum": "Başarılı", "mesaj": "Demo bildirim telefona fırlatıldı!"}
+    except Exception as e:
+        return {"durum": "Hata", "detay": str(e)}

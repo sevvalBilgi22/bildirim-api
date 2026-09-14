@@ -1,18 +1,22 @@
 # bildirim_app
+***bildirim demosu (api.py dosyasının en altına alınacak): 
+@app.get("/demo-bildirim")
+def demo_bildirim_gonder():
+    try:
+        mesaj = messaging.Message(
+            notification=messaging.Notification(
+                title='Danışman Sunumu - Canlı Test',
+                body='Bu bildirim, proje savunması için manuel olarak tetiklenmiştir. Sistem kusursuz çalışıyor!',
+            ),
+            data={
+                "link": "https://www.uludag.edu.tr/gemlik"
+            },
+            #kodda tanımlı olan TELEFON_TOKEN değişkenini kullanır
+            token=TELEFON_TOKEN, 
+        )
+        messaging.send(mesaj)
+        return {"durum": "Başarılı", "mesaj": "Demo bildirim telefona fırlatıldı!"}
+    except Exception as e:
+        return {"durum": "Hata", "detay": str(e)}
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
- telefon token:fRITA0vCTtOIMhuH4oWglF:APA91bE7LTIbQ4iUy44J22BjLRArxfXVCjoDGno3hy35a3pTeNhE_5p6CddcXxRooiiTd_H0ucc43xJ_NQQMpVDoM4QteEOMQ25_uHiTJB0BZ7Bpkm1DW8Q
+    >git push...sonrasında bu linke git: https://bildirim-sunucusu.onrender.com/demo-bildirim
