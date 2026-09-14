@@ -96,5 +96,5 @@ def duyuru_kontrol_et_ve_kaydet():
         print(f"[{su_an}] Kazıma işlemi sırasında hata oluştu: {e}")
 
 zamanlayici = BackgroundScheduler()
-zamanlayici.add_job(duyuru_kontrol_et_ve_kaydet, 'interval', hours=4)  #Her 4 saatte bir çalışacak
+zamanlayici.add_job(duyuru_kontrol_et_ve_kaydet, 'interval', hours=1)  #Her 4 saatte bir çalışacak
 zamanlayici.start()
