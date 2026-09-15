@@ -103,24 +103,11 @@ zamanlayici.add_job(duyuru_kontrol_et_ve_kaydet, 'interval', hours=1)  #Her 1 sa
 if not zamanlayici.running:
     zamanlayici.start()
 
-@app.get("/demo-bildirim")
-def demo_bildirim_gonder():
-    try:
-        mesaj = messaging.Message(
-            notification=messaging.Notification(
-                title='Danışman Sunumu - Canlı Test',
-                body='Bu bildirim, proje savunması için manuel olarak tetiklenmiştir. Sistem kusursuz çalışıyor!',
-            ),
-            data={
-                "link": "https://www.uludag.edu.tr/gemlik"
-            },
-            #kodda tanımlı olan TELEFON_TOKEN değişkenini kullanır
-            token=TELEFON_TOKEN, 
-        )
-        messaging.send(mesaj)
-        return {"durum": "Başarılı", "mesaj": "Demo bildirim telefona fırlatıldı!"}
-    except Exception as e:
-        return {"durum": "Hata", "detay": str(e)}
+@app.get("/tetikle")
+def manuel_tetikle():
+    duyuru_kontrol_et_ve_kaydet() 
+    return {"durum": "Başarılı", "mesaj": "Veriler anında çekildi ve kaydedildi!"}
+    
 zamanlayici.add_job(duyuru_kontrol_et_ve_kaydet, 'interval', hours=1)  #Her 4 saatte bir çalışacak
 if not zamanlayici.running:
     zamanlayici.start()
