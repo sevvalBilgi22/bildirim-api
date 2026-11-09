@@ -48,3 +48,10 @@ app.*.map.json
 .widget_preview/
 
 firebase-admin.json
+
+   bildirimler.db
+   *.db
+   .env
+   __pycache__/
+   venv/
+   .venv/
