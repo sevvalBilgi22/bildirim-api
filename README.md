@@ -150,7 +150,6 @@ API varsayılan olarak `http://127.0.0.1:8000` adresinde çalışır.
 | `KONTROL_ARALIGI_SAAT` | (Opsiyonel) Otomatik tarama aralığı, varsayılan `1` |
 | `ENABLE_DOCS` | (Opsiyonel) `1` yapılırsa `/docs` sayfası açılır |
 
-> ⚠️ **Gizli bilgileri asla commit etme.** `firebase-admin.json`, `.env` ve `*.db` dosyaları `.gitignore` içinde olmalıdır.
 
 ### 2) Firebase
 
@@ -216,4 +215,4 @@ flutter run
 
 ## 📄 Lisans
 
-Bu proje eğitim amaçlı geliştirilmiştir. Lisans bilgisi eklenecektir.
+Bu proje eğitim amaçlı geliştirilmiştir.
